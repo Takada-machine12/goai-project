@@ -1,4 +1,4 @@
-# gui/final_simple_gui.py - 最終版シンプル囲碁GUI
+# gui/mac_simple_gui.py - Mac対応の超シンプル囲碁GUI
 import tkinter as tk
 from tkinter import messagebox
 import sys
@@ -15,113 +15,150 @@ except ImportError as e:
     print(f"❌ ゲームエンジン読み込みエラー: {e}")
     sys.exit(1)
 
-class FinalSimpleGoGUI:
+class MacSimpleGoGUI:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("囲碁AI - 最終版")
+        self.root.title("囲碁AI - Mac対応版")
         self.root.geometry("800x700")
-        self.root.configure(bg='#2c3e50')
+        self.root.configure(bg='white')
         
         # 設定
         self.board_size = 9
+        self.cell_size = 50  # より大きく
+        self.margin = 50     # より大きく
         
         # ゲーム初期化
         self.game = Game(self.board_size)
         if not hasattr(self.game, 'captured_stones'):
             self.game.captured_stones = {1: 0, -1: 0}
         
-        # ボタン配列
+        # ボタン配列で盤面を表現（確実に見える方法）
         self.buttons = []
         
         self.setup_gui()
-        self.create_simple_board()
+        self.create_button_board()
         
     def setup_gui(self):
         """GUI設定"""
         # タイトル
         title_label = tk.Label(
             self.root,
-            text="🎮 囲碁AI - 最終版",
-            font=('Arial', 24, 'bold'),
-            fg='white', bg='#2c3e50'
+            text="🎮 囲碁AI - Mac対応版",
+            font=('Arial', 20, 'bold'),
+            bg='white'
         )
-        title_label.pack(pady=15)
-        
-        # ゲーム情報フレーム
-        info_frame = tk.Frame(self.root, bg='#34495e', bd=3, relief=tk.RAISED)
-        info_frame.pack(pady=10)
+        title_label.pack(pady=10)
         
         # 現在のプレイヤー表示
         self.status_label = tk.Label(
-            info_frame,
+            self.root,
             text="現在: 黒の番",
-            font=('Arial', 18, 'bold'),
-            fg='white', bg='#34495e'
+            font=('Arial', 16, 'bold'),
+            bg='white'
         )
-        self.status_label.pack(pady=10, padx=20)
+        self.status_label.pack(pady=5)
         
         # 手数表示
         self.move_label = tk.Label(
-            info_frame,
+            self.root,
             text="手数: 0",
             font=('Arial', 14),
-            fg='white', bg='#34495e'
+            bg='white'
         )
         self.move_label.pack(pady=5)
         
         # ボタン操作パネル
-        button_frame = tk.Frame(self.root, bg='#2c3e50')
-        button_frame.pack(pady=15)
+        button_frame = tk.Frame(self.root, bg='white')
+        button_frame.pack(pady=10)
         
         tk.Button(
             button_frame, text="新しいゲーム",
             command=self.new_game,
-            font=('Arial', 14, 'bold'), width=12, height=2,
+            font=('Arial', 12), width=12, height=2,
             bg='#3498db', fg='white'
-        ).pack(side=tk.LEFT, padx=10)
+        ).pack(side=tk.LEFT, padx=5)
         
         tk.Button(
             button_frame, text="パス",
             command=self.pass_move,
-            font=('Arial', 14, 'bold'), width=8, height=2,
+            font=('Arial', 12), width=8, height=2,
             bg='#f39c12', fg='white'
-        ).pack(side=tk.LEFT, padx=10)
+        ).pack(side=tk.LEFT, padx=5)
         
         tk.Button(
             button_frame, text="終了",
             command=self.root.quit,
-            font=('Arial', 14, 'bold'), width=8, height=2,
+            font=('Arial', 12), width=8, height=2,
             bg='#e74c3c', fg='white'
-        ).pack(side=tk.LEFT, padx=10)
+        ).pack(side=tk.LEFT, padx=5)
         
-    def create_simple_board(self):
-        """シンプルで確実な盤面を作成"""
-        # 盤面フレーム
-        board_container = tk.Frame(self.root, bg='#8B4513', bd=8, relief=tk.RAISED)
+    def create_button_board(self):
+        """本格的な囲碁盤面を作成"""
+        # 盤面全体のフレーム - 木目調
+        board_container = tk.Frame(self.root, bg='#8B4513', bd=10, relief=tk.RAISED)
         board_container.pack(pady=20)
         
-        # 盤面グリッド
-        board_frame = tk.Frame(board_container, bg='#DEB887', bd=2)
-        board_frame.pack(padx=15, pady=15)
+        # 座標ラベル用のフレーム
+        coord_frame = tk.Frame(board_container, bg='#8B4513')
+        coord_frame.pack(padx=10, pady=10)
         
-        # ボタン配列を作成
+        # 列ラベル（上）
+        top_labels = tk.Frame(coord_frame, bg='#8B4513')
+        top_labels.grid(row=0, column=1, sticky='ew')
+        
+        labels = "ABCDEFGHJKLMNOPQRS"  # Iを除く囲碁式
+        for j in range(self.board_size):
+            tk.Label(top_labels, text=labels[j], bg='#8B4513', fg='white', 
+                    font=('Arial', 10, 'bold')).grid(row=0, column=j, padx=12)
+        
+        # 左側の行ラベル
+        left_labels = tk.Frame(coord_frame, bg='#8B4513')
+        left_labels.grid(row=1, column=0, sticky='ns')
+        
+        for i in range(self.board_size):
+            tk.Label(left_labels, text=str(self.board_size - i), bg='#8B4513', fg='white',
+                    font=('Arial', 10, 'bold')).grid(row=i, column=0, pady=8)
+        
+        # 盤面フレーム - 真ん中
+        board_frame = tk.Frame(coord_frame, bg='#DEB887', bd=2, relief=tk.SUNKEN)
+        board_frame.grid(row=1, column=1)
+        
+        # 右側の行ラベル
+        right_labels = tk.Frame(coord_frame, bg='#8B4513')
+        right_labels.grid(row=1, column=2, sticky='ns')
+        
+        for i in range(self.board_size):
+            tk.Label(right_labels, text=str(self.board_size - i), bg='#8B4513', fg='white',
+                    font=('Arial', 10, 'bold')).grid(row=i, column=0, pady=8)
+        
+        # 列ラベル（下）
+        bottom_labels = tk.Frame(coord_frame, bg='#8B4513')
+        bottom_labels.grid(row=2, column=1, sticky='ew')
+        
+        for j in range(self.board_size):
+            tk.Label(bottom_labels, text=labels[j], bg='#8B4513', fg='white',
+                    font=('Arial', 10, 'bold')).grid(row=0, column=j, padx=12)
+        
+        # ボタン配列を作成 - より小さく、囲碁らしく
         self.buttons = []
         for i in range(self.board_size):
             row = []
             for j in range(self.board_size):
+                # 各交点をボタンで表現
                 btn = tk.Button(
                     board_frame,
                     text="",
-                    width=4,
-                    height=2,
-                    font=('Arial', 16, 'bold'),
-                    bg='#DEB887',
+                    width=3,
+                    height=1,
+                    font=('Arial', 14, 'bold'),
+                    bg='#DEB887',  # 木目調
                     activebackground='#F5DEB3',
                     relief=tk.FLAT,
-                    bd=1,
+                    bd=0,
+                    highlightthickness=0,
                     command=lambda r=i, c=j: self.on_button_click(r, c)
                 )
-                btn.grid(row=i, column=j, padx=1, pady=1)
+                btn.grid(row=i, column=j, padx=0, pady=0)
                 row.append(btn)
             self.buttons.append(row)
         
@@ -129,22 +166,19 @@ class FinalSimpleGoGUI:
         if self.board_size == 9:
             star_positions = [(2, 2), (2, 6), (6, 2), (6, 6), (4, 4)]
             for x, y in star_positions:
-                self.buttons[x][y].config(text="✦", fg='#8B4513')
+                self.buttons[x][y].config(text="⚫", fg='#654321', font=('Arial', 8))
         
         self.update_board_display()
         
     def on_button_click(self, row, col):
         """ボタンクリック処理"""
-        print(f"ボタンクリック: ({row}, {col}) - 現在のプレイヤー: {self.game.current_player}")
+        print(f"ボタンクリック: ({row}, {col})")
         
         try:
             if self.game.is_legal_move(row, col):
-                # 現在のプレイヤーを保存
-                current_player = self.game.current_player
-                
                 success = self.game.make_move((row, col))
                 if success:
-                    print(f"手の実行成功: ({row}, {col}) - プレイヤー: {current_player}")
+                    print(f"手の実行成功: ({row}, {col})")
                     self.update_board_display()
                 else:
                     messagebox.showwarning("無効な手", "その位置には打てません")
@@ -163,61 +197,60 @@ class FinalSimpleGoGUI:
                 stone = self.game.board.get_color(i, j)
                 btn = self.buttons[i][j]
                 
-                print(f"位置({i},{j}): 石の色={stone}")
-                
-                if stone == BLACK:  # 黒石 (1)
-                    btn.config(
-                        text="●", 
-                        fg='#000000',  # 黒色
-                        bg='#DEB887', 
-                        font=('Arial', 24, 'bold'),
-                        relief=tk.RAISED,
-                        bd=2
-                    )
-                    print(f"黒石配置: ({i},{j})")
-                    
-                elif stone == WHITE:  # 白石 (-1)
-                    btn.config(
-                        text="●", 
-                        fg='#FFFFFF',  # 白色
-                        bg='#000000',  # 背景を黒にして白石を見やすく
-                        font=('Arial', 24, 'bold'),
-                        relief=tk.RAISED,
-                        bd=2
-                    )
-                    print(f"白石配置: ({i},{j})")
-                    
-                else:  # 空の場所 (0)
-                    # 星の位置チェック
+                if stone == BLACK:
+                    # 黒石 - 本物の囲碁石らしく
+                    btn.config(text="●", fg='#000000', bg='#DEB887', 
+                             font=('Arial', 18, 'bold'),
+                             relief=tk.RAISED, bd=2)
+                elif stone == WHITE:
+                    # 白石 - 本物の囲碁石らしく
+                    btn.config(text="●", fg='#FFFFFF', bg='#DEB887', 
+                             font=('Arial', 18, 'bold'),
+                             relief=tk.RAISED, bd=2)
+                else:
+                    # 空の場所
                     if self.board_size == 9 and (i, j) in [(2, 2), (2, 6), (6, 2), (6, 6), (4, 4)]:
-                        btn.config(
-                            text="✦", 
-                            fg='#8B4513', 
-                            bg='#DEB887',
-                            font=('Arial', 12),
-                            relief=tk.FLAT,
-                            bd=1
-                        )
+                        # 星の位置 - 小さな黒点
+                        btn.config(text="⚫", fg='#654321', bg='#DEB887', 
+                                 font=('Arial', 8),
+                                 relief=tk.FLAT, bd=0)
                     else:
-                        btn.config(
-                            text="", 
-                            fg='#8B4513', 
-                            bg='#DEB887',
-                            font=('Arial', 12),
-                            relief=tk.FLAT,
-                            bd=1
-                        )
+                        # 空の交点 - 線を表現
+                        # 端の処理
+                        if i == 0:  # 上端
+                            if j == 0:  # 左上角
+                                text = "┌"
+                            elif j == self.board_size - 1:  # 右上角
+                                text = "┐"
+                            else:  # 上辺
+                                text = "┬"
+                        elif i == self.board_size - 1:  # 下端
+                            if j == 0:  # 左下角
+                                text = "└"
+                            elif j == self.board_size - 1:  # 右下角
+                                text = "┘"
+                            else:  # 下辺
+                                text = "┴"
+                        elif j == 0:  # 左辺
+                            text = "├"
+                        elif j == self.board_size - 1:  # 右辺
+                            text = "┤"
+                        else:  # 内部
+                            text = "┼"
+                        
+                        btn.config(text=text, fg='#654321', bg='#DEB887', 
+                                 font=('Arial', 12),
+                                 relief=tk.FLAT, bd=0)
         
         self.update_status()
         
     def update_status(self):
         """ステータス更新"""
+        current = "黒" if self.game.current_player == BLACK else "白"
         if self.game.game_over:
-            self.status_label.config(text="ゲーム終了", fg='#e74c3c')
+            self.status_label.config(text="ゲーム終了")
         else:
-            current = "黒" if self.game.current_player == BLACK else "白"
-            color = "#000000" if self.game.current_player == BLACK else "#FFFFFF"
-            self.status_label.config(text=f"現在: {current}の番", fg=color)
+            self.status_label.config(text=f"現在: {current}の番")
         
         move_count = len(self.game.move_history)
         self.move_label.config(text=f"手数: {move_count}")
@@ -227,7 +260,7 @@ class FinalSimpleGoGUI:
             
     def pass_move(self):
         """パス"""
-        print(f"パス実行 - 現在のプレイヤー: {self.game.current_player}")
+        print("パス実行...")
         success = self.game.make_move(None)
         if success:
             self.update_board_display()
@@ -242,31 +275,18 @@ class FinalSimpleGoGUI:
         
     def show_game_end(self):
         """ゲーム終了"""
-        # 簡易的な勝敗判定
-        board = self.game.board.board
-        black_count = (board == BLACK).sum()
-        white_count = (board == WHITE).sum()
-        
-        if black_count > white_count:
-            winner = "黒の勝利！"
-        elif white_count > black_count:
-            winner = "白の勝利！"
-        else:
-            winner = "引き分け！"
-            
-        messagebox.showinfo("ゲーム終了", 
-                           f"{winner}\n\n黒石: {black_count}\n白石: {white_count}\n手数: {len(self.game.move_history)}")
+        messagebox.showinfo("ゲーム終了", "2回連続パスでゲーム終了です")
         
     def run(self):
         """実行"""
-        print("🎮 最終版GUI起動完了")
+        print("🎮 Mac対応GUI起動完了")
         self.root.mainloop()
 
 def main():
-    print("=== 最終版 囲碁AI ===")
+    print("=== Mac対応 囲碁AI ===")
     
     try:
-        app = FinalSimpleGoGUI()
+        app = MacSimpleGoGUI()
         app.run()
     except Exception as e:
         print(f"❌ エラー: {e}")
