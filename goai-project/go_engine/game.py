@@ -9,6 +9,7 @@ class Game:
         self.game_over = False
         self.move_history = []
         self.board_history = []
+        self.captured_stones = {1: 0, -1: 0}
         
     def get_legal_moves(self):
         """合法手のリストを取得"""
