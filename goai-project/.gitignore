@@ -60,3 +60,7 @@ venv.bak/
 # Anaconda
 .conda/
 .condarc
+__pycache__/
+*.pyc
+.DS_Store
+*.log
